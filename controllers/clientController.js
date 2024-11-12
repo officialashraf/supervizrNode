@@ -82,6 +82,7 @@ module.exports = {
                 } else if (type == 'employee') {
 
                     const existingEmp = await employeeModel.findOne({ _id: vendorId });
+                    console.log(existingEmp)
                    createdBy = existingEmp.fullname;
                    createdByImg = existingEmp.empImg;
                 //    createdBy = "ashraf" 
@@ -151,37 +152,63 @@ module.exports = {
 
 
     //For clientList api for admin
+    // clientList: async (req, res) => {
+
+    //     try {
+
+    //         const { vendorId } = req.params;
+
+    //         // Fetching employees with the given vendorId
+    //         const employees = await employeeModel.find({ vendorId: vendorId });
+    //         const employeeIds = employees.map(employee => employee._id);
+
+    //         // const clientList = await clientModel.find({
+    //         //     vendorId: { $in: [vendorId, ...employeeIds] }
+    //         // });
+
+    //         const clientList = await clientModel.find({
+    //             vendorId: { $in: [vendorId, ...employeeIds] }
+    //         }).sort({ created: -1 });
+
+
+    //         // Check if clientList array is empty
+    //         if (!clientList || clientList.length === 0) {
+    //             return res.status(404).json({ message: 'clientList not found' });
+    //         }
+
+    //         res.status(200).json(clientList);
+
+    //     } catch (error) {
+    //         console.error('Error fetching client:', error);
+    //         res.status(500).json({ message: 'Internal Server Error', error });
+    //     }
+
+    // },
+
     clientList: async (req, res) => {
-
         try {
-
             const { vendorId } = req.params;
-
-            // Fetching employees with the given vendorId
-            const employees = await employeeModel.find({ vendorId: vendorId });
+    
+            // Fetch employees with the specified vendorId
+            const employees = await employeeModel.find({ vendorId });
             const employeeIds = employees.map(employee => employee._id);
-
-            // const clientList = await clientModel.find({
-            //     vendorId: { $in: [vendorId, ...employeeIds] }
-            // });
-
+    
+            // Find clients linked to vendorId or any of the employeeIds, sorted by creation date
             const clientList = await clientModel.find({
                 vendorId: { $in: [vendorId, ...employeeIds] }
-            }).sort({ created: -1 });
-
-
-            // Check if clientList array is empty
-            if (!clientList || clientList.length === 0) {
-                return res.status(404).json({ message: 'clientList not found' });
+            })
+            //.sort({ created: -1 });
+    
+            // If clientList is empty, return 404
+            if (clientList.length === 0) {
+                return res.status(404).json({ message: 'No clients found' });
             }
-
+    
             res.status(200).json(clientList);
-
         } catch (error) {
-            console.error('Error fetching client:', error);
+            console.error('Error fetching clients:', error);
             res.status(500).json({ message: 'Internal Server Error', error });
         }
-
     },
 
 

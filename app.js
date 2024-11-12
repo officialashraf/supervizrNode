@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 // Load environment variables from .env file
 dotenv.config();
-const port = process.env.IMAGE_BASE_URL;
+const port = process.env.PORT || 4001;
 
 
 app.use(express.static('public'));
