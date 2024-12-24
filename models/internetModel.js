@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Define the user schema
 const internetSchema = new mongoose.Schema({
@@ -53,4 +53,4 @@ internetSchema.index({ userId: 1 });
 // Create the User model
 const Internet = mongoose.model('Internet', internetSchema);
 
-module.exports = Internet;
+export default Internet;

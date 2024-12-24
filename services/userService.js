@@ -1,25 +1,26 @@
-const validator = require('validator');
-const axios = require('axios');
+import validator from 'validator'
+import axios from 'axios';
 
-async function isValidEmail(email) {
+const isValidEmail= async(email) =>{
   return validator.isEmail(email);
 }
 
-async function isValidMobile(mobile) {
+
+const isValidMobile =async (mobile)=> {
   return validator.isNumeric(mobile) && validator.isLength(mobile, { min: 10, max: 10 });
 }
 
-async function isValidPassword(password) {
+const isValidPassword =async (password)=> {
   return validator.isLength(password, { min: 5 });
 }
 
-async function parseCoordinates(coordinates) {
+const parseCoordinates = async(coordinates)=> {
   const [lat, lng] = coordinates.split(',').map(coord => parseFloat(coord.trim()));
   return { lat, lng };
 }
 
 
-async function generateOTP() {
+const generateOTP= async()=> {
 
   const otpLength = 4;
   const min = Math.pow(10, otpLength - 1);
@@ -33,7 +34,7 @@ async function generateOTP() {
 
 
 // distanceMiddleware.js
-async function calculateDistanceAndDuration(originCoords, destinationCoords) {
+const calculateDistanceAndDuration = async(originCoords, destinationCoords) =>{
 
   const apiKey = process.env.GMAPAPI;
 
@@ -54,7 +55,7 @@ async function calculateDistanceAndDuration(originCoords, destinationCoords) {
 }
 
 
-async function getLocation(lat, long) {
+const getLocation= async(lat, long) =>{
   const apiKey = process.env.GMAPAPI;
 
   try {
@@ -80,7 +81,7 @@ async function getLocation(lat, long) {
 
 
 
-module.exports = { isValidEmail, isValidMobile, isValidPassword, generateOTP, calculateDistanceAndDuration, parseCoordinates, getLocation };
+export { isValidEmail, isValidMobile, isValidPassword, generateOTP, calculateDistanceAndDuration, parseCoordinates, getLocation };
 
 
 

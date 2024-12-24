@@ -1,18 +1,16 @@
-const attendanceModel = require('../models/attendanceModel');
-const vendorModel = require('../models/vendorModel');
-const employeeModel = require('../models/employeeModel');
-const trackModel = require('../models/trackModel');
+import attendanceModel from '../models/attendanceModel.js';
+import vendorModel from '../models/vendorModel.js';
+import employeeModel from '../models/employeeModel.js';
+import trackModel from '../models/trackModel.js';
 
-const axios = require('axios');
-// const moment = require('moment');
-const moment = require('moment-timezone');
+import {getLocation} from '../services/userService.js';
+import { broadcastLocationUpdate } from '../socket.js';
 
-const userService = require('../services/userService');
-
-module.exports = {
+import axios from 'axios';
+import moment from 'moment-timezone';
   //For attendance in api
 
-  checkIn: async (req, res) => {
+ export const checkIn =  async (req, res) => {
     try {
       const { userId, lat, long, type } = req.body;
 
@@ -29,7 +27,7 @@ module.exports = {
       const createdAt = currentDateIST.format('YYYY-MM-DD');
 
 
-      const locationGet = await userService.getLocation(lat, long);
+      const locationGet = await getLocation(lat, long);
        console.log(locationGet);
       // Proceed with the check-in process
       const newAttendance = new attendanceModel({
@@ -44,17 +42,28 @@ module.exports = {
 
       await newAttendance.save();
 
+      const checkInData = { 
+        userId,
+         type,
+         attnedanceDate: currentDate,
+         attnedanceLat: lat,
+         attnedanceLong: long, 
+         attnedanceAddress: locationGet,
+          createdAt: createdAt,
+         };
+       broadcastLocationUpdate(checkInData)
+
       res.status(200).json({ message: 'Attendance checked in successfully' });
     } catch (error) {
       console.error('Error recording attendance:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
-  },
+  };
 
 
 
   //For attendance out api
-  checkOut: async (req, res) => {
+  export const checkOut=  async (req, res) => {
     try {
 
       const { userId, lat, long, type } = req.body;
@@ -70,7 +79,7 @@ module.exports = {
       const currentDate = currentDateIST.format('YYYY-MM-DD hh:mm A');
       const createdAt = currentDateIST.format('YYYY-MM-DD');
 
-      const locationGet = await userService.getLocation(lat, long);
+      const locationGet = await getLocation(lat, long);
 
       // Proceed with the check-in process
       const newAttendance = new attendanceModel({
@@ -85,6 +94,17 @@ module.exports = {
       });
 
       await newAttendance.save();
+      const checkOutData = { 
+        userId,
+         type,
+         attnedanceDate: currentDate,
+         attnedanceLat: lat,
+         attnedanceLong: long, 
+         attnedanceAddress: locationGet,
+          createdAt: createdAt,
+          status: "Out"
+         };
+       broadcastLocationUpdate(checkOutData)
 
       res.status(200).json({ message: 'Attendance checked out successfully' });
 
@@ -92,10 +112,10 @@ module.exports = {
       console.error('Error checking out attendance:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
-  },
+  };
 
   // all Attendece list 
-  allAttendece: async (req, res) => {
+  export const allAttendece=  async (req, res) => {
 
     try {
 
@@ -114,12 +134,12 @@ module.exports = {
       res.status(500).json({ error: 'Internal Server Error', message: error.message });
     }
 
-  },
+  };
 
 
 
   //get distance and duration 
-  getDuration: async (req, res) => {
+  export const getDuration=  async (req, res) => {
 
     const apiKey = process.env.GMAPAPI;
     const origin = req.body.origin;
@@ -142,10 +162,10 @@ module.exports = {
     }
 
 
-  },
+  };
 
 
-  attendanceInOut: async (req, res) => {
+  export const attendanceInOut=  async (req, res) => {
     try {
 
       const { userId, lat, long, type } = req.body;
@@ -222,14 +242,14 @@ module.exports = {
 
 
       }
-
+      const locationGet = await getLocation(lat, long);
       const newAttendance = new attendanceModel({
         userId,
         type,
         attnedanceDate: currentDate,
         attnedanceLat: lat,
         attnedanceLong: long,
-        attnedanceAddress: "0",
+        attnedanceAddress: locationGet,
         status,
         createdAt: createdAt,
       });
@@ -249,6 +269,19 @@ module.exports = {
         createdAt: currentDate,
       })
       await newTrack.save();
+
+      const checkInOutData = { 
+        userId,
+         type,
+         attnedanceDate: currentDate,
+         attnedanceLat: lat,
+         attnedanceLong: long, 
+         attnedanceAddress: locationGet,
+          createdAt: createdAt,
+          status
+         };
+       broadcastLocationUpdate(checkInOutData)
+      
       // end track log
 
       res.status(200).json({ message: 'Attendance ' + status + ' Successfully' });
@@ -257,11 +290,11 @@ module.exports = {
       console.error('Error:', error.message);
       res.status(500).json({ error: 'Internal Server Error' });
     }
-  },
+  };
 
 
   //autolog
-  autologOut: async (req, res) => {
+  export const autologOut=  async (req, res) => {
     try {
 
       const currentDateIST = moment.tz(new Date(), 'Asia/Kolkata');
@@ -333,7 +366,7 @@ module.exports = {
 
             const savedAttendance = await newAttendance.save();
             const insertedId = savedAttendance._id;
-
+            const locationGet = await getLocation(lat, long);
             // Track log insertion
             const newTrack = new trackModel({
               userId: attendance.userId,
@@ -346,6 +379,18 @@ module.exports = {
               createdAt: currentDate,
             });
             await newTrack.save();
+
+            const logOutData = { 
+              userId: attendance.userId,
+               type: attendance.type, 
+              status,
+               attnedanceDate:currentDate,  
+               attnedanceLat: lat, 
+               attnedanceLong: long,
+                attnedanceAddress: locationGet,
+                 createdAt: createdAt, 
+                };
+             broadcastLocationUpdate(logOutData);
 
           }
         }
@@ -362,11 +407,10 @@ module.exports = {
       console.error('Error:', error.message);
       // res.status(500).json({ error: 'Internal Server Error' });
     }
-  },
+  };
 
 
-};
-//module.exports end
+
 
 
 

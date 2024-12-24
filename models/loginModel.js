@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Define the login schema
 const loginSchema = new mongoose.Schema({
@@ -53,4 +53,4 @@ loginSchema.index({ userId: 1 });
 // Create the User model
 const Login = mongoose.model('login', loginSchema);
 
-module.exports = Login;
+export default Login;

@@ -1,13 +1,13 @@
-const express = require('express');
+import express from "express"
 const router = express.Router();
-const attendanceController = require('../controllers/attendanceController');
+import {checkIn,checkOut,attendanceInOut, allAttendece,getDuration,autologOut} from  '../controllers/attendanceController.js';
 
 // Define your all attendance route
-router.post('/check-in', attendanceController.checkIn);
-router.post('/check-out', attendanceController.checkOut);
-router.post('/attendance-api', attendanceController.attendanceInOut);
-router.get('/list/:userId', attendanceController.allAttendece);
-router.post('/distance', attendanceController.getDuration);
-router.get('/autolog', attendanceController.autologOut);
+router.post('/check-in', checkIn);
+router.post('/check-out', checkOut);
+router.post('/attendance-api', attendanceInOut);
+router.get('/list/:userId', allAttendece);
+router.post('/distance', getDuration);
+router.get('/autolog', autologOut);
 
-module.exports = router;
+export default router;

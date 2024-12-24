@@ -1,24 +1,26 @@
-const taskModel = require('../models/taskModel');
-const userService = require('../services/userService');
-const employeeModel = require('../models/employeeModel');
-const vendorModel = require('../models/vendorModel');
-const clientModel = require('../models/clientModel');
-const trackModel = require('../models/trackModel');
-const fs = require('fs');
+import taskModel from '../models/taskModel.js';
+import {getLocation, parseCoordinates,calculateDistanceAndDuration} from '../services/userService.js';
+import employeeModel from '../models/employeeModel.js';
+import vendorModel from '../models/vendorModel.js';
+import clientModel  from '../models/clientModel.js';
+import trackModel from '../models/trackModel.js';
+import fs from 'fs';
 
 
-const axios = require('axios');
+import axios from 'axios';
 const YOUR_GOOGLE_MAPS_API_KEY = process.env.GMAPAPI;
 
-const multer = require('multer');
-const path = require('path');
+import multer from 'multer';
+import path from  'path';
 
-const moment = require('moment-timezone');
+import moment from  'moment-timezone';
 
-const { exit } = require('process');
+import { exit } from  'process';
+import { broadcastLocationUpdate } from  '../socket.js';
 
 
-const ObjectId = require('mongoose').Types.ObjectId;
+import mongoose from 'mongoose';
+const ObjectId = mongoose.Types.ObjectId;
 
 
 // Storage configuration for multer
@@ -37,10 +39,8 @@ const upload = multer({ storage }).single("taskDocument");
 
 
 
-module.exports = {
-  //For attendance in api
 
-  createTask: async (req, res) => {
+  export const createTask= async (req, res) => {
     try {
 
       let taskDocumentFilename = '';
@@ -167,114 +167,11 @@ module.exports = {
     }
 
 
-  },
+  };
 
 
-
-  //For tasklist for admin api
-  taskList: async (req, res) => {
-
-    try {
-
-      const { vendorId } = req.params;
-
-      const { status, taskDate } = req.query;
-
-      // Fetching employees with the given vendorId
-      const employees = await employeeModel.find({ vendorId: vendorId });
-      const employeeIds = employees.map(employee => employee._id);
-
-
-      let query = { vendorId: { $in: [vendorId, ...employeeIds] } };
-
-      if (taskDate) {
-        const startDate = new Date(taskDate);
-        startDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day
-        const endDate = new Date(taskDate);
-        endDate.setUTCHours(23, 59, 59, 999); // Set to the end of the day
-
-        query.taskDate = {
-          $gte: startDate,
-          $lt: endDate
-        };
-      }
-
-
-      // Add status filter if provided
-      if (status !== undefined && (status == '0' || status == '1' || status == '2')) {
-        query.status = (status =='2') ? '0' :status;
-      }
-
-      const taskList = await taskModel.find(query, '-taskAddress').sort({ taskDate: 1 });
-
-      
-      if (!taskList || taskList.length === 0) {
-        // If task list is empty or not found
-        return res.status(200).json({ tasks: [] });
-        // return res.status(404).json({ tasks: [] });
-      } else {
-        // If tasks are found
-
-
-        let formattedTaskList = [];
-
-        if(status != '1') {
-
-          formattedTaskList = taskList
-          .map(task => {
-            // const parsedTaskDate = moment(task.taskDate, 'YYYY-MM-DD hh:mm A').toDate();
-            // const hoursDiff = moment().diff(parsedTaskDate, 'hours');
-           
-            const parsedTaskDate = moment.utc(task.taskDate, 'YYYY-MM-DD hh:mm A').toDate(); // Parse taskDate as UTC
-            const hoursDiff = moment.utc().diff(parsedTaskDate, 'hours'); // Compare with the current UTC time
-
-            console.log('parsedTaskDate',parsedTaskDate);
-            console.log('hoursDiff',hoursDiff);
-            
-            return {
-              ...task.toObject(),
-              taskDate: moment.utc(task.taskDate).format('YYYY-MM-DD hh:mm A'),
-              taskEndDate: (task.taskEndDate !=null && task.taskEndDate !='')? moment.utc(task.taskEndDate).format('YYYY-MM-DD hh:mm A') :'',
-             
-              shouldInclude: (status == '2') ? hoursDiff >= 24 : hoursDiff <= 24
-            };
-          })
-          .filter(task => task.shouldInclude);
-        
-
-        }else{
-
-           // Format taskDate before sending the response
-        formattedTaskList = taskList.map(task => ({
-          ...task.toObject(),
-          taskDate: moment.utc(task.taskDate).format('YYYY-MM-DD hh:mm A'),
-          taskEndDate: (task.taskEndDate != null && task.taskEndDate !== '') 
-            ? moment.utc(task.taskEndDate).format('YYYY-MM-DD hh:mm A') 
-            : '',
-        }));
-
-
-        }
-        
-
-       
-
-        // If tasks are found
-        return res.status(200).json({ tasks: formattedTaskList });
-
-
-        // return res.status(200).json({ tasks: taskList });
-      }
-
-    } catch (error) {
-      console.error('Error fetching all users:', error);
-      res.status(500).json({ message: 'Internal Server Error', error });
-    }
-
-  },
-
-  //task Edit
-  taskEdit: async (req, res) => {
+  // //task Edit
+  export const taskEdit= async (req, res) => {
 
     try {
 
@@ -296,12 +193,69 @@ module.exports = {
     }
 
 
-  },
-
+  };
+   //Task list 
+  export const taskList = async (req, res) => {
+    try {
+      const { vendorId } = req.params;
+      const { status, taskDate } = req.query;
+  
+      if (!vendorId) {
+        return res.status(400).json({ message: "Vendor ID is required." });
+      }
+  
+      // Fetch employees with the given vendorId
+      const employees = await employeeModel.find({ vendorId: vendorId });
+      const employeeIds = employees.map(employee => employee._id);
+  
+      // Build the query
+      let query = { vendorId: { $in: [vendorId, ...employeeIds] } };
+  
+      // Handle taskDate filter
+      if (taskDate) {
+        const startDate = moment(taskDate, 'YYYY-MM-DD').startOf('day').toDate();
+        const endDate = moment(taskDate, 'YYYY-MM-DD').endOf('day').toDate();
+        query.taskDate = { $gte: startDate, $lt: endDate };
+      }
+  
+      // Handle status filter
+      if (status !== undefined && ['0', '1', '2'].includes(status)) {
+        query.status = status === '2' ? '0' : status;
+      }
+  
+      // Fetch tasks from the database
+      const tasks = await taskModel.find(query, '-taskAddress').sort({ taskDate: 1 });
+  
+      if (!tasks || tasks.length === 0) {
+        return res.status(200).json({ tasks: [] });
+      }
+  
+      // Format tasks
+      const formattedTaskList = tasks.map(task => {
+        const parsedTaskDate = moment.utc(task.taskDate).toDate();
+        const hoursDiff = moment.utc().diff(parsedTaskDate, 'hours');
+  
+        return {
+          ...task.toObject(),
+          taskDate: moment.utc(task.taskDate).format('YYYY-MM-DD hh:mm A'),
+          taskEndDate: task.taskEndDate 
+            ? moment.utc(task.taskEndDate).format('YYYY-MM-DD hh:mm A') 
+            : '',
+          shouldInclude: status === '2' ? hoursDiff >= 24 : hoursDiff <= 24
+        };
+      }).filter(task => status !== '1' || task.shouldInclude);
+      const totalTask = formattedTaskList.length
+      return res.status(200).json({ totalTask, tasks: formattedTaskList });
+    } catch (error) {
+      console.error('Error fetching task list:', error);
+      return res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+  };
+  
 
   //task Details By Employee id under working
 
-  taskListByEmp: async (req, res) => {
+  export const taskListByEmp= async (req, res) => {
 
     try {
 
@@ -385,10 +339,10 @@ module.exports = {
       console.error('Error in task :', error);
       res.status(500).json({ message: 'Internal Server Error', error });
     }
-  },
+  };
 
   //task Update
-  taskUpdates: async (req, res) => {
+  export const taskUpdates= async (req, res) => {
 
     try {
 
@@ -491,10 +445,10 @@ module.exports = {
       res.status(500).json({ message: 'Internal Server Error', error });
     }
 
-  },
+  };
 
   //task delete
-  taskDelete: async (req, res) => {
+  export const taskDelete= async (req, res) => {
 
     try {
 
@@ -517,10 +471,10 @@ module.exports = {
       res.status(500).json({ message: 'Internal Server Error', error });
     }
 
-  },
+  };
 
   // taskDone
-  taskDone: async (req, res) => {
+  export const taskDone= async (req, res) => {
 
     try {
 
@@ -533,7 +487,7 @@ module.exports = {
         }
 
         const { taskID, notes, lat, long } = req.body;
-
+          //  console.log('taskiddd',taskID)
         const myDate = new Date();
         const currentDateIST = moment.tz(myDate, 'Asia/Kolkata');
         const taskEndDate = currentDateIST.format('YYYY-MM-DD hh:mm A');
@@ -564,9 +518,9 @@ module.exports = {
        // const myCoords = `${lat},${long}`;
 
         // Calculate distance using your userService
-        // const originCoords = await userService.parseCoordinates(myCoords);
-        // const destinationCoords = await userService.parseCoordinates(taskCoords);
-        // const result = await userService.calculateDistanceAndDuration(originCoords, destinationCoords);
+        // const originCoords = await parseCoordinates(myCoords);
+        // const destinationCoords = await parseCoordinates(taskCoords);
+        // const result = await calculateDistanceAndDuration(originCoords, destinationCoords);
         // const distance = result.data.rows[0].elements[0].distance.text;
         // let distanceInMeters;
         //if(tasklat != '' && tasklong != ''){
@@ -596,8 +550,8 @@ module.exports = {
         }
 
         //get address from where task done
-        // const locationGet = await userService.getLocation(lat, long);
-        const locationGet = 0;
+        const locationGet = await getLocation(lat, long);
+        //const locationGet = 0;
 
         task.status = 1 || task.status;
         task.taskNotes = notes || task.taskNotes;
@@ -623,6 +577,14 @@ module.exports = {
         await newTrack.save();
         // end track log
 
+        const taskUpdate = { 
+          taskId: task._id,
+           userId: task.userId,
+           locationGet,
+            status: task.status, 
+            updatedAt: new Date(),
+         };
+         broadcastLocationUpdate(taskUpdate)
 
         res.status(200).json({ message: 'Task Done Successfully' });
 
@@ -633,10 +595,10 @@ module.exports = {
       res.status(500).json({ message: 'Internal Server Error', error });
     }
 
-  },
+  };
 
   // //get distance and duration
-  CheckDistanceAndDuration: async (req, res) => {
+  export const CheckDistanceAndDuration= async (req, res) => {
 
     try {
 
@@ -645,26 +607,33 @@ module.exports = {
       if (!origin || !destination) {
         return res.status(400).json({ message: 'Origin and destination coordinates are required.' });
       }
-
+      
       // Parse origin and destination coordinates
-      const originCoords = await userService.parseCoordinates(origin);
-      const destinationCoords = await userService.parseCoordinates(destination);
+      const originCoords = await parseCoordinates(origin);
+      const destinationCoords = await parseCoordinates(destination);
 
-      const result = await userService.calculateDistanceAndDuration(originCoords, destinationCoords);
+      console.log('Origin:', originCoords);
+       console.log('Destination:', destinationCoords);
+       
+      const result = await calculateDistanceAndDuration(originCoords, destinationCoords);
 
-      const distance = result.data.rows[0].elements[0].distance.text;
-      const duration = result.data.rows[0].elements[0].duration.text;
+      console.log('API Response Data:', { 
+        destination_addresses: result?.data?.destination_addresses, 
+        origin_addresses: result?.data?.origin_addresses,
+         elements: result?.data?.rows?.[0]?.elements 
+        });
 
-      const destination_addresses = result.data.destination_addresses;
-      const origin_addresses = result.data.origin_addresses;
-
-
-
-      res.status(200).json({
-        message: 'Get successfully', distance,
-        duration
-
-      });
+      if (result && result.data && result.data.rows && result.data.rows[0] && result.data.rows[0].elements && result.data.rows[0].elements[0]) {
+         const distance = result.data.rows[0].elements[0].distance.text || 'N/A';
+          const duration = result.data.rows[0].elements[0].duration.text || 'N/A'; 
+          const destination_addresses = result.data.destination_addresses || 'N/A';
+           const origin_addresses = result.data.origin_addresses || 'N/A'
+           ; res.status(200).json({ 
+            message: 'Get successfully', 
+            distance,
+             duration });
+     } else { 
+      throw new Error('Invalid response structure from distance API'); } }
 
       // res.status(200).json({
       //   message: 'Get successfully', distance,
@@ -681,16 +650,9 @@ module.exports = {
       //   origin_addresses,
       // });
 
-    } catch (error) {
+    catch (error) {
       console.error('Error fetching distance and duration:', error.message);
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
-  },
+  };
 
-
-};
-
-
-
-
-//module.exports end

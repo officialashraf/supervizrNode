@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Define the user schema
 const trackSchema = new mongoose.Schema({
@@ -78,4 +78,4 @@ const trackSchema = new mongoose.Schema({
 // Create the asset model
 const track = mongoose.model('track', trackSchema);
 
-module.exports = track;
+export default track;

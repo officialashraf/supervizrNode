@@ -1,16 +1,15 @@
-const assetsModel = require('../models/assetsModel');
-const employeeModel = require('../models/employeeModel');
-const vendorModel = require('../models/vendorModel');
-
-const path = require('path');
-
-const moment = require('moment-timezone');
-const fs = require('fs');
+import  assetsModel from '../models/assetsModel.js';
+import  employeeModel from '../models/employeeModel.js';
+import vendorModel from '../models/vendorModel.js';
+import  path from 'path';
+import  moment from 'moment-timezone';
+import  fs from 'fs';
 
 
-module.exports = {
 
-    createAsset: async (req, res) => {
+
+
+    export const createAsset = async (req, res) => {
         try {
     
           let uploadedFile = '';
@@ -62,10 +61,10 @@ module.exports = {
         }
     
     
-      },
+      };
 
         //For asset List api
-        assetsList: async (req, res) => {
+        export const  assetsList = async (req, res) => {
             try {
                 const { page, vendorId,perPage} = req.body;
             
@@ -138,10 +137,10 @@ module.exports = {
                 res.status(500).json({ message: 'Internal Server Error', error: error.message });
             }
           
-        },
+        };
     
     //asset Edit
-    assetsEdit: async (req, res) => {
+    export const assetsEdit = async (req, res) => {
 
         try {
 
@@ -161,9 +160,9 @@ module.exports = {
             console.error('Error for geting Asset:', error);
             res.status(500).json({ message: 'Internal Server Error', error });
         }
-    },
+    };
     //asset Update
-    assetsUpdate: async (req, res) => {
+    export const assetsUpdate = async (req, res) => {
 
         try {
             let uploadedFile = '';
@@ -243,10 +242,10 @@ module.exports = {
             res.status(500).json({ message: 'Asset update failed', error: error.message });
         }
 
-    },
+    };
 
     // asset Delete
-    assetsDelete: async (req, res) => {
+    export const assetsDelete = async (req, res) => {
 
         try {
             const { assetId } = req.params;
@@ -283,8 +282,6 @@ module.exports = {
             res.status(500).json({ message: 'Internal Server Error', error: error.message });
         }
 
-    },
+    };
 
 
-};
-//module.exports end

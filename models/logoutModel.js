@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Define the logout schema
 const logoutSchema = new mongoose.Schema({
@@ -53,4 +53,4 @@ logoutSchema.index({ userId: 1 });
 // Create the User model
 const Logout = mongoose.model('logout', logoutSchema);
 
-module.exports = Logout;
+export default Logout;

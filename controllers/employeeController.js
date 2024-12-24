@@ -1,27 +1,29 @@
-const employeeModel = require('../models/employeeModel');
-const attendanceModel = require('../models/attendanceModel');
-const taskModel = require('../models/taskModel');
-const clientModel = require('../models/clientModel');
-const vendorModel = require('../models/vendorModel');
-const trackModel = require('../models/trackModel');
-const internetModel = require('../models/internetModel');
-const gpsModel = require('../models/gpsModel');
-const loginModel= require('../models/loginModel');
-const logoutModel= require('../models/logoutModel');
-
-const CONSTANTS= require('../utils/constants');
 
 
+  import employeeModel  from '../models/employeeModel.js';
+  import attendanceModel  from '../models/attendanceModel.js';
+  import taskModel  from '../models/taskModel.js';
+  import clientModel  from '../models/clientModel.js';
+  import vendorModel  from '../models/vendorModel.js';
+  import trackModel  from '../models/trackModel.js';
+ import internetModel  from '../models/internetModel.js';
+ import  gpsModel  from '../models/gpsModel.js';
+ import loginModel  from '../models/loginModel.js';
+ import logoutModel  from '../models/logoutModel.js';
+ import {broadcastLocationUpdate}  from '../socket.js'
 
-const userService = require('../services/userService');
-const jwt = require('jsonwebtoken');
+//const {CONSTANTS } from  '../utils/constants.js';
 
-const moment = require('moment');
-const { sendOTP, sendEmployeeMsg } = require('../services/msgService');
 
-module.exports = {
+import {generateOTP , isValidEmail,isValidMobile,isValidPassword, parseCoordinates,calculateDistanceAndDuration}  from '../services/userService.js';
+import jwt  from 'jsonwebtoken';
+
+import moment  from 'moment';
+import { sendOTP, sendEmployeeMsg }  from '../services/msgService.js';
+
+
     //For create employee api
-    createEmp: async (req, res) => {
+   export const createEmp = async (req, res) => {
         try {
             const { fullname, mobile, userType, machineNumber, workLocation, vendorId } = req.body;
 
@@ -44,7 +46,7 @@ module.exports = {
             //     companyName = vendorExists.vendorCompany;
             // }
 
-            if (!await userService.isValidMobile(mobile)) {
+            if (!await isValidMobile(mobile)) {
                 return res.status(400).json({ message: 'Invalid mobile number' });
             }
 
@@ -70,7 +72,7 @@ module.exports = {
             console.error(error);
             res.status(500).json({ message: 'Internal Server Error' });
         }
-    },
+    };
 
 
 
@@ -78,7 +80,7 @@ module.exports = {
 
 
     //getEmployee details
-    getEmployee: async (req, res) => {
+    export const getEmployee = async (req, res) => {
         try {
             const { userId } = req.params;
 
@@ -95,10 +97,10 @@ module.exports = {
             console.error(error);
             res.status(500).json({ message: 'Internal Server Error' });
         }
-    },
+    };
 
 
-    getEmpList: async (req, res) => {
+    export const getEmpList = async (req, res) => {
         try {
             const { vendorId } = req.params;
             const { empName } = req.query;
@@ -123,19 +125,22 @@ module.exports = {
                 return res.status(404).json({ message: 'Employees not found' });
             }
 
-            res.status(200).json(employees);
+            res.status(200).json({
+                totalemployess: employees.length,
+                employees
+            });
 
 
         } catch (error) {
             console.error('Error fetching all employees:', error);
             res.status(500).json({ message: 'Internal Server Error' });
         }
-    },
+    };
 
 
 
     //filterEmpType  filter
-    filterEmpType: async (req, res) => {
+    export const filterEmpType = async (req, res) => {
         try {
             const myDate = new Date();
             const currentDateIST = moment.tz(myDate, 'Asia/Kolkata');
@@ -150,14 +155,14 @@ module.exports = {
 
             // Find the employees by vendorId and userType
             let empList = '';
-            if(attandance_status == 'all'){
-             empList = await employeeModel.find({ vendorId: vendorId, userType: userType }, '-otp')
-                .sort({ _id: -1 });
-            }else{
+            if (attandance_status == 'all') {
+                empList = await employeeModel.find({ vendorId: vendorId, userType: userType }, '-otp')
+                    .sort({ _id: -1 });
+            } else {
 
-             empList = await employeeModel.find({ vendorId: vendorId, userType: userType, attendanceStatus: attandance_status }, '-otp')
+                empList = await employeeModel.find({ vendorId: vendorId, userType: userType, attendanceStatus: attandance_status }, '-otp')
 
-             }
+            }
 
             if (!empList || empList.length === 0) {
                 return res.status(404).json({ message: 'No employees found' });
@@ -168,13 +173,13 @@ module.exports = {
             console.error(error);
             res.status(500).json({ message: 'Internal Server Error' });
         }
-    },
+    };
 
 
 
     //updateEmployee data
 
-    updateEmployee: async (req, res) => {
+    export const updateEmployee = async (req, res) => {
 
         try {
 
@@ -195,7 +200,7 @@ module.exports = {
 
 
 
-            if (!await userService.isValidMobile(mobile)) {
+            if (!await isValidMobile(mobile)) {
                 return res.status(400).json({ message: 'Invalid mobile number' });
             }
 
@@ -225,10 +230,10 @@ module.exports = {
             console.error(error);
             res.status(500).json({ message: 'Internal Server Error' });
         }
-    },
+    };
 
     //employee Login
-    employeeLogin: async (req, res) => {
+    export const employeeLogin = async (req, res) => {
 
         try {
             const { mobileNumber } = req.body;
@@ -240,7 +245,7 @@ module.exports = {
             }
 
             const employee = await employeeModel.findOne({ mobile: mobileNumber });
-            const otpCode = await userService.generateOTP();
+            const otpCode = await generateOTP();
             // const otpCode = "1234";
 
             if (!employee) {
@@ -256,7 +261,7 @@ module.exports = {
 
                 if (result.matchedCount === 1) {
 
-                    await sendOTP(mobileNumber,otpCode);
+                    await sendOTP(mobileNumber, otpCode);
 
                     console.log('OTP updated successfully');
 
@@ -273,10 +278,10 @@ module.exports = {
             res.status(500).json({ message: 'Internal Server Error', error });
         }
 
-    },
+    };
 
-     //verify otp
-     verifyOTP: async (req, res) => {
+    //verify otp
+    export const verifyOTP = async (req, res) => {
         try {
             const { otp, mobile } = req.body;
 
@@ -291,38 +296,52 @@ module.exports = {
                 return res.status(400).json({ message: 'Mobile Number Not Found' });
             }
 
-            if (otp == storedOTP.otp) {
-                res.status(200).json({ message: 'OTP verification successful', employee: storedOTP });
-            } else {
-                res.status(400).json({ message: 'Invalid OTP' });
+            if (otp !== storedOTP.otp) {
+                return res.status(400).json({ message: 'Invalid OTP' });
             }
 
+            // Payload for JWT
+            const payload = {
+                userId: storedOTP._id,
+                userRole: storedOTP.role, // Ensure role is stored in DB  
+            };
 
-                // //update user status
-                // const filter = { mobile: mobile };
-                // const update = { status: 1 };
+            // Generate JWT token
+            const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: '14d' }); // Secret key must match
+            console.log(token)
+            res.status(200).json({
+                message: 'OTP verification successful',
+                token, // Send token in response
+                employee: storedOTP,
+            });
+        }
 
-                // try {
-                //     const result = await employeeModel.updateOne(filter, update);
-                //     console.log(result.matchedCount === 1 ? 'Status updated successfully' : 'Error in Status updating!');
-                // } catch (error) {
-                //     console.error('Error updating OTP:', error);
-                // }
 
-                // // Generate a JWT token
-                // const token = jwt.sign({ userId: storedOTP._id, mobile: storedOTP.mobile }, 'yourSecretKey', {
-                //     expiresIn: '1h', // Token expiration time
-                // });
+        // //update user status
+        // const filter = { mobile: mobile };
+        // const update = { status: 1 };
 
-            
+        // try {
+        //     const result = await employeeModel.updateOne(filter, update);
+        //     console.log(result.matchedCount === 1 ? 'Status updated successfully' : 'Error in Status updating!');
+        // } catch (error) {
+        //     console.error('Error updating OTP:', error);
+        // }
 
-        } catch (error) {
+        // // Generate a JWT token
+        // const token = jwt.sign({ userId: storedOTP._id, mobile: storedOTP.mobile }, 'yourSecretKey', {
+        //     expiresIn: '1h', // Token expiration time
+        // });
+
+
+
+        catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Failed to verify OTP' });
         }
-    },
+    };
     //verify otp with latlong 
-    // verifyOTP: async (req, res) => {
+    // verifyOTP = async (req, res) => {
     //     try {
     //         const { otp, mobile,lat,long } = req.body;
 
@@ -364,7 +383,7 @@ module.exports = {
     //              const currentDate = currentDateIST.format('YYYY-MM-DD hh:mm A');
     //              const createdAt = currentDateIST.format('YYYY-MM-DD');
 
-    //              const locationGet = await userService.getLocation(lat, long);
+    //              const locationGet = await getLocation(lat, long);
 
     //                  // Save gps record
     //                  const savedLogin = new loginModel({
@@ -376,7 +395,7 @@ module.exports = {
     //                      loginAddress: locationGet,
     //                      createdAt: createdAt,
     //                  });
-                     
+
     //                  await savedLogin.save();
     //                  // Save track log
     //                  let status = 'Login';
@@ -408,7 +427,7 @@ module.exports = {
 
 
     //Employee Tracking Data
-    // getEmpTrack: async (req, res) => {
+    // getEmpTrack = async (req, res) => {
     //     try {
 
     //         const userId = req.params.userId;
@@ -447,10 +466,10 @@ module.exports = {
     //             const locationInLatLong = originLat + ',' + originLong;
     //             const locationOutLatLong = destinationLat + ',' + destinationLong;
 
-    //             const originCoords = await userService.parseCoordinates(locationInLatLong);
-    //             const destinationCoords = await userService.parseCoordinates(locationOutLatLong);
+    //             const originCoords = await parseCoordinates(locationInLatLong);
+    //             const destinationCoords = await parseCoordinates(locationOutLatLong);
 
-    //             const result = await userService.calculateDistanceAndDuration(originCoords, destinationCoords);
+    //             const result = await calculateDistanceAndDuration(originCoords, destinationCoords);
 
     //             distance = result.data.rows[0].elements[0].distance.text;
     //             duration = result.data.rows[0].elements[0].duration.text;
@@ -480,10 +499,10 @@ module.exports = {
     //                 const locationInLatLong = originLat + ',' + originLong;
     //                 const locationOutLatLong = destinationLat + ',' + destinationLong;
 
-    //                 const originCoords = await userService.parseCoordinates(locationInLatLong);
-    //                 const destinationCoords = await userService.parseCoordinates(locationOutLatLong);
+    //                 const originCoords = await parseCoordinates(locationInLatLong);
+    //                 const destinationCoords = await parseCoordinates(locationOutLatLong);
 
-    //                 const result = await userService.calculateDistanceAndDuration(originCoords, destinationCoords);
+    //                 const result = await calculateDistanceAndDuration(originCoords, destinationCoords);
 
     //                 totalDistance += parseFloat(result.data.rows[0].elements[0].distance.text);
     //                 totalDuration += parseFloat(result.data.rows[0].elements[0].duration.text);
@@ -517,7 +536,7 @@ module.exports = {
 
 
 
-    getEmpTrack: async (req, res) => {
+    export const getEmpTrack = async (req, res) => {
         try {
 
 
@@ -566,10 +585,10 @@ module.exports = {
                     const locationInLatLong = originLat + ',' + originLong;
                     const locationOutLatLong = destinationLat + ',' + destinationLong;
 
-                    const originCoords = await userService.parseCoordinates(locationInLatLong);
-                    const destinationCoords = await userService.parseCoordinates(locationOutLatLong);
+                    const originCoords = await parseCoordinates(locationInLatLong);
+                    const destinationCoords = await parseCoordinates(locationOutLatLong);
 
-                    const result = await userService.calculateDistanceAndDuration(originCoords, destinationCoords);
+                    const result = await calculateDistanceAndDuration(originCoords, destinationCoords);
 
                     totalDistance = result.data.rows[0].elements[0].distance.text;
                     totalDuration = result.data.rows[0].elements[0].duration.text;
@@ -593,10 +612,10 @@ module.exports = {
                 const locationInLatLong = originLat + ',' + originLong;
                 const locationOutLatLong = destinationLat + ',' + destinationLong;
 
-                const originCoords = await userService.parseCoordinates(locationInLatLong);
-                const destinationCoords = await userService.parseCoordinates(locationOutLatLong);
+                const originCoords = await parseCoordinates(locationInLatLong);
+                const destinationCoords = await parseCoordinates(locationOutLatLong);
 
-                const result = await userService.calculateDistanceAndDuration(originCoords, destinationCoords);
+                const result = await calculateDistanceAndDuration(originCoords, destinationCoords);
 
                 totalDistance = parseFloat(result.data.rows[0].elements[0].distance.text);
                 totalDuration = parseFloat(result.data.rows[0].elements[0].duration.text);
@@ -611,10 +630,10 @@ module.exports = {
                     const locationInLatLong = originLat + ',' + originLong;
                     const locationOutLatLong = destinationLat + ',' + destinationLong;
 
-                    const originCoords = await userService.parseCoordinates(locationInLatLong);
-                    const destinationCoords = await userService.parseCoordinates(locationOutLatLong);
+                    const originCoords = await parseCoordinates(locationInLatLong);
+                    const destinationCoords = await parseCoordinates(locationOutLatLong);
 
-                    const result = await userService.calculateDistanceAndDuration(originCoords, destinationCoords);
+                    const result = await calculateDistanceAndDuration(originCoords, destinationCoords);
 
                     totalDistance += parseFloat(result.data.rows[0].elements[0].distance.text);
                     totalDuration += parseFloat(result.data.rows[0].elements[0].duration.text);
@@ -644,10 +663,10 @@ module.exports = {
                     const locationInLatLong = originLat + ',' + originLong;
                     const locationOutLatLong = destinationLat + ',' + destinationLong;
 
-                    const originCoords = await userService.parseCoordinates(locationInLatLong);
-                    const destinationCoords = await userService.parseCoordinates(locationOutLatLong);
+                    const originCoords = await parseCoordinates(locationInLatLong);
+                    const destinationCoords = await parseCoordinates(locationOutLatLong);
 
-                    const result = await userService.calculateDistanceAndDuration(originCoords, destinationCoords);
+                    const result = await calculateDistanceAndDuration(originCoords, destinationCoords);
 
                     totalDistance += parseFloat(result.data.rows[0].elements[0].distance.text);
                     totalDuration += parseFloat(result.data.rows[0].elements[0].duration.text);
@@ -663,10 +682,10 @@ module.exports = {
                     const locationInLatLong = originLat + ',' + originLong;
                     const locationOutLatLong = destinationLat + ',' + destinationLong;
 
-                    const originCoords = await userService.parseCoordinates(locationInLatLong);
-                    const destinationCoords = await userService.parseCoordinates(locationOutLatLong);
+                    const originCoords = await parseCoordinates(locationInLatLong);
+                    const destinationCoords = await parseCoordinates(locationOutLatLong);
 
-                    const result = await userService.calculateDistanceAndDuration(originCoords, destinationCoords);
+                    const result = await calculateDistanceAndDuration(originCoords, destinationCoords);
 
                     totalDistance += parseFloat(result.data.rows[0].elements[0].distance.text);
                     totalDuration += parseFloat(result.data.rows[0].elements[0].duration.text);
@@ -685,6 +704,17 @@ module.exports = {
                     taskCount: taskCount
                 }
             };
+            const locationUpdate = {
+                userId: userId,
+                totalDistance: totalDistance,
+                totalDuration: totalDuration,
+                tasks: tasks,
+                taskCount: taskCount,
+                employee: employee
+            };
+    
+            // Call the broadcast function here
+            broadcastLocationUpdate(locationUpdate); 
 
             res.status(200).json(response);
 
@@ -693,11 +723,11 @@ module.exports = {
             console.error('Error fetching employee--tracking-related data:', error);
             res.status(500).json({ message: 'Internal Server Error' });
         }
-    },
+    };
 
 
     //delete employee
-    empDelete: async (req, res) => {
+    export const empDelete = async (req, res) => {
 
         try {
 
@@ -720,12 +750,12 @@ module.exports = {
             res.status(500).json({ message: 'Internal Server Error', error });
         }
 
-    },
+    };
 
 
 
     //CurrentLocation
-    currentLocation: async (req, res) => {
+    export const currentLocation = async (req, res) => {
         try {
             const { userId, lat, long, batteryStatus } = req.body;
 
@@ -743,6 +773,20 @@ module.exports = {
             employee.batteryStatus = batteryStatus || employee.batteryStatus;
 
             await employee.save();
+            console.log('employeme', employee)
+            //WebSocket clients
+          
+            const locationUpdate = {
+                userId: employee._id,
+                latitude: employee.latitude,
+                longitude: employee.longitude,
+                batteryStatus: employee.batteryStatus,
+            };
+
+            broadcastLocationUpdate(locationUpdate)
+           
+           
+
 
             res.status(200).json({ message: 'Current location updated successfully' });
 
@@ -750,10 +794,10 @@ module.exports = {
             console.error('Error fetching employee current location', error);
             res.status(500).json({ message: 'Internal Server Error' });
         }
-    },
+    };
 
     //cleint list for employee
-    clientList: async (req, res) => {
+    export const clientList = async (req, res) => {
 
         try {
 
@@ -773,10 +817,10 @@ module.exports = {
             res.status(500).json({ message: 'Internal Server Error', error });
         }
 
-    },
+    };
 
     //task list for employee
-    taskList: async (req, res) => {
+    export const taskList = async (req, res) => {
 
         try {
 
@@ -795,36 +839,35 @@ module.exports = {
             res.status(500).json({ message: 'Internal Server Error', error });
         }
 
-    },
+    };
 
-
-    trackEmpRecord: async (req, res) => {
+    export const trackEmpRecord = async (req, res) => {
         try {
             const { userId, filterDate, page, perPage } = req.body;
             const currentPage = parseInt(page) || 1;
             const itemsPerPage = parseInt(perPage) || 10; // Default to 10 items per page
-    
+
             if (!userId) {
                 return res.status(400).json({ error: 'User id is empty' });
             }
-    
+
             const employee = await employeeModel.findById(userId, '-otp');
-    
+
             if (!employee) {
                 return res.status(404).json({ error: 'Employee not found' });
             }
-    
+
             let query = { userId: userId };
 
             // task count
             let query2 = { userId: userId, status: 1 };
-    
+
             if (filterDate) {
                 const startDate = new Date(filterDate);
                 startDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day
                 const endDate = new Date(filterDate);
                 endDate.setUTCHours(23, 59, 59, 999); // Set to the end of the day
-    
+
                 query.createdAt = {
                     $gte: startDate,
                     $lt: endDate
@@ -841,26 +884,30 @@ module.exports = {
             const taskCount = tasksCount.length; // Count of tasks
             // task count
 
-    
+
             const totalCount = await trackModel.countDocuments(query); // Total count of documents
-    
+
             const trackData = await trackModel.find(query)
                 .sort({ createdAt: 1 })
                 .skip((currentPage - 1) * itemsPerPage)
                 .limit(itemsPerPage);
-    
+
             if (!trackData || trackData.length === 0) {
-                return res.status(404).json({ message: "No Data Found", response: { employee, track: [], origin: { distance: 0, duration: 0, taskCount: 0 }, totalCount: 0,pagination: {
-                    filterDate:filterDate,
-                    totalCount: 0,
-                    totalPages: 0,
-                    currentPage: 0,
-                    perPage: 0
-                } } });
+                return res.status(404).json({
+                    message: "No Data Found", response: {
+                        employee, track: [], origin: { distance: 0, duration: 0, taskCount: 0 }, totalCount: 0, pagination: {
+                            filterDate: filterDate,
+                            totalCount: 0,
+                            totalPages: 0,
+                            currentPage: 0,
+                            perPage: 0
+                        }
+                    }
+                });
             }
-    
+
             let mergedDetails = [];
-    
+
             for (let i = 0; i < trackData.length; i++) {
                 const trackd = trackData[i];
                 const userType = trackd.userType;
@@ -872,56 +919,56 @@ module.exports = {
                 const gpsId = trackd.gpsId;
                 const loginId = trackd.loginId;
                 const logoutId = trackd.logoutId;
-    
+
                 if (userId && userType === 'employee' && attendceId != '0') {
                     const attDetailIn = await attendanceModel.findOne({ _id: attendceId });
                     if (attDetailIn) {
                         mergedDetails.push(attDetailIn);
                     }
                 }
-                
+
                 if (taskId && taskId != '0') {
                     const taskData = await taskModel.findOne({ _id: taskId });
-    
+
                     if (taskData) {
                         const formattedTask = {
                             ...taskData.toObject(),
                             taskDate: moment(taskData.taskDate).format('YYYY-MM-DD hh:mm A'),
-                            taskEndDate: (taskData.taskEndDate !=null && taskData.taskEndDate !='')? moment(taskData.taskEndDate).format('YYYY-MM-DD hh:mm A') :''
+                            taskEndDate: (taskData.taskEndDate != null && taskData.taskEndDate != '') ? moment(taskData.taskEndDate).format('YYYY-MM-DD hh:mm A') : ''
                         };
-    
+
                         mergedDetails.push(formattedTask);
                     }
                 }
-    
+
                 if (userId && userType === 'employee' && internetId != '0') {
                     const internetRecord = await internetModel.findOne({ _id: internetId });
                     if (internetRecord) {
                         mergedDetails.push(internetRecord);
                     }
                 }
-    
+
                 if (userId && userType === 'employee' && gpsId != '0') {
                     const gpsRecord = await gpsModel.findOne({ _id: gpsId });
                     if (gpsRecord) {
                         mergedDetails.push(gpsRecord);
                     }
                 }
-    
+
                 if (userId && userType === 'employee' && loginId != '0') {
                     const loginRecord = await loginModel.findOne({ _id: loginId });
                     if (loginRecord) {
                         mergedDetails.push(loginRecord);
                     }
                 }
-    
+
                 if (userId && userType === 'employee' && logoutId != '0') {
                     const logoutRecord = await logoutModel.findOne({ _id: logoutId });
                     if (logoutRecord) {
                         mergedDetails.push(logoutRecord);
                     }
                 }
-    
+
                 // if (userId && userType === 'employee' && attendceId != '0') {
                 //     const attDetailout = await attendanceModel.findOne({ _id: attendceId });
                 //     if (attDetailout) {
@@ -929,25 +976,25 @@ module.exports = {
                 //     }
                 // }
             }
-    
+
             let totalDistance = 0;
             let totalDuration = 0;
-    
+
             if (trackData.length > 0) {
                 for (let i = 0; i < trackData.length - 1; i++) {
                     const originLat = trackData[i].lat;
                     const originLong = trackData[i].long;
                     const destinationLat = trackData[i + 1].lat;
                     const destinationLong = trackData[i + 1].long;
-    
+
                     const locationInLatLong = originLat + ',' + originLong;
                     const locationOutLatLong = destinationLat + ',' + destinationLong;
-    
-                    const originCoords = await userService.parseCoordinates(locationInLatLong);
-                    const destinationCoords = await userService.parseCoordinates(locationOutLatLong);
-    
-                    const resultDistance = await userService.calculateDistanceAndDuration(originCoords, destinationCoords);
-    
+
+                    const originCoords = await parseCoordinates(locationInLatLong);
+                    const destinationCoords = await parseCoordinates(locationOutLatLong);
+
+                    const resultDistance = await calculateDistanceAndDuration(originCoords, destinationCoords);
+
                     if (
                         resultDistance &&
                         resultDistance.data &&
@@ -965,7 +1012,7 @@ module.exports = {
                     }
                 }
             }
-    
+
             const response = {
                 employee: employee,
                 track: mergedDetails,
@@ -975,24 +1022,29 @@ module.exports = {
                     taskCount: taskCount  // Update with your logic for task count
                 },
                 pagination: {
-                    filterDate:filterDate,
+                    filterDate: filterDate,
                     totalCount: totalCount,
                     totalPages: Math.ceil(totalCount / itemsPerPage),
                     currentPage: currentPage,
                     perPage: itemsPerPage
                 }
             };
-    
+            const locationUpdate = {
+                userId: employee._id,
+                distance: totalDistance,
+                duration: totalDuration,
+                taskCount: taskCount 
+            };
+            
+            broadcastLocationUpdate(locationUpdate);
+
             return res.status(200).json({ message: "Success", response });
         } catch (error) {
             console.error('Error fetching related data:', error);
             res.status(500).json({ message: 'Internal Server Error' });
         }
-    }
-    
-    
+    };
 
 
 
-};
-//module.exports end
+

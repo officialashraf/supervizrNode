@@ -1,15 +1,13 @@
-const licenseModel = require('../models/licenseModel');
-const vendorModel = require('../models/vendorModel');
-
-const path = require('path');
-
-const moment = require('moment-timezone');
-const fs = require('fs');
+import licenseModel from '../models/licenseModel.js';
+import vendorModel from '../models/vendorModel.js';
+import path from 'path'
+import moment from 'moment-timezone';
+import fs from 'fs';
 
 
-module.exports = {
 
-    createLicense: async (req, res) => {
+
+  export const  createLicense = async (req, res) => {
         try {
     
           let licenseDocument = '';
@@ -70,11 +68,11 @@ module.exports = {
         }
     
     
-      },
+      };
 
 
     //For license List api
-   licenseList: async (req, res) => {
+    export const licenseList = async (req, res) => {
     try {
         const { page, vendorId,perPage } = req.body;
     
@@ -148,11 +146,11 @@ module.exports = {
         res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   
-},
+};
 
     
     //license Edit
-    licenseEdit: async (req, res) => {
+    export const  licenseEdit = async (req, res) => {
 
         try {
 
@@ -172,9 +170,9 @@ module.exports = {
             console.error('Error for geting License:', error);
             res.status(500).json({ message: 'Internal Server Error', error });
         }
-    },
+    };
     //license Update
-    licenseUpdate: async (req, res) => {
+    export const licenseUpdate = async (req, res) => {
         
         try {
             let licenseDocument = '';
@@ -272,10 +270,10 @@ module.exports = {
             res.status(500).json({ message: 'License update failed', error: error.message });
         }
 
-    },
+    };
 
     // license Delete
-    licenseDelete: async (req, res) => {
+    export const  licenseDelete = async (req, res) => {
 
         try {
             const { licenseId } = req.params;
@@ -312,8 +310,5 @@ module.exports = {
             res.status(500).json({ message: 'Internal Server Error', error: error.message });
         }
 
-    },
+    };
 
-
-};
-//module.exports end

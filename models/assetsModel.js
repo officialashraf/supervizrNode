@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Define the user schema
 const assetsSchema = new mongoose.Schema({
@@ -82,4 +82,4 @@ const assetsSchema = new mongoose.Schema({
 // Create the asset model
 const asset = mongoose.model('asset', assetsSchema);
 
-module.exports = asset;
+export default asset;

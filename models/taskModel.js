@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Define the user schema
 const taskSchema = new mongoose.Schema({
@@ -122,4 +122,4 @@ const taskSchema = new mongoose.Schema({
 // Create the User model
 const Task = mongoose.model('Task', taskSchema);
 
-module.exports = Task;
+export default  Task;

@@ -1,10 +1,10 @@
 
-const axios = require('axios');
+import axios from "axios";
 const MSG91_AUTH_KEY = '409988AMtNHmzGsn65ddab09P1'; // Replace with your actual authkey
 
 
 
-const sendOTP = async (mobileNo='',otpCode='') => {
+export const sendOTP = async (mobileNo='',otpCode='') => {
   // console.log('mobileNo',mobileNo);
 
  
@@ -37,7 +37,7 @@ const sendOTP = async (mobileNo='',otpCode='') => {
 
 
 
-const sendEmployeeMsg = async (mobileNo='') => {
+ export const sendEmployeeMsg = async (mobileNo='') => {
 
   try {
     const options = {
@@ -66,7 +66,7 @@ const sendEmployeeMsg = async (mobileNo='') => {
   };
 
 
-module.exports = { sendOTP, sendEmployeeMsg};
+
 
 
 

@@ -1,18 +1,19 @@
-const reimbrushmentModel = require('../models/reimbrushmentModel');
-const employeeModel = require('../models/employeeModel');
-const vendorModel = require('../models/vendorModel');
+import  reimbrushmentModel  from '../models/reimbrushmentModel.js';
+import  employeeModel  from '../models/employeeModel.js';
+import  vendorModel  from '../models/vendorModel.js';
+import  {broadcastLocationUpdate}  from '../socket.js'
 
-const multer = require('multer');
-const path = require('path');
-const axios = require('axios');
-const moment = require('moment-timezone');
-const fs = require('fs');
-
-
-module.exports = {
+import  multer  from 'multer';
+import  path  from 'path';
+import  axios  from 'axios';
+import  moment  from 'moment-timezone';
+import  fs  from 'fs';
 
 
-    createReimbrushment: async (req, res) => {
+
+
+
+  export const  createReimbrushment = async (req, res) => {
         try {
     
           let uploadedFile = '';
@@ -66,11 +67,11 @@ module.exports = {
         }
     
     
-      },
+      };
 
 
     //For reimbrushment List api
-    reimbrushmentList: async (req, res) => {
+    export const reimbrushmentList = async (req, res) => {
         try {
             const { page, filterDate, vendorId, type, filterType } = req.body;
         
@@ -187,11 +188,11 @@ module.exports = {
             res.status(500).json({ message: 'Internal Server Error', error: error.message });
         }
       
-    },
+    };
 
 
         //For reimbrushment List api
-        reimbrushmentList: async (req, res) => {
+        export const  reimbrushmentLista = async (req, res) => {
             try {
 
                 const { page, filterDate, vendorId, type, filterType,perPage } = req.body;
@@ -309,10 +310,10 @@ module.exports = {
                 res.status(500).json({ message: 'Internal Server Error', error: error.message });
             }
           
-        },
+        };
     
     //reimbrushment Edit
-    reimbrushmentEdit: async (req, res) => {
+    export const reimbrushmentEdit = async (req, res) => {
 
         try {
 
@@ -332,10 +333,10 @@ module.exports = {
             console.error('Error for geting Reimbrushment:', error);
             res.status(500).json({ message: 'Internal Server Error', error });
         }
-    },
+    };
 
     //For getReimbursementSums  api
-    getReimbursementSums: async (req, res) => {
+    export const getReimbursementSums = async (req, res) => {
         try {
             const { vendorId, type, filterDate } = req.body;
     
@@ -390,7 +391,15 @@ module.exports = {
                 approved: 0,
                 rejected: 0
             };
-    
+            const sumdata = {
+                  all: `INR ${sums.all.toFixed(2)}`,
+                  pending: `INR ${sums.pending.toFixed(2)}`,
+                  approved: `INR ${sums.approved.toFixed(2)}`,
+                  rejected: `INR ${sums.rejected.toFixed(2)}`,
+              };
+               broadcastLocationUpdate(sumdata)  
+              
+
             res.status(200).json({
                 message: 'Sum of amounts fetched successfully',
                 data: {
@@ -405,10 +414,10 @@ module.exports = {
             console.error('Error fetching reimbursement sums:', error);
             res.status(500).json({ message: 'Internal Server Error', error: error.message });
         }
-    },
+    };
 
     //reimbrushment Update
-    reimbrushmentUpdate: async (req, res) => {
+    export const reimbrushmentUpdate = async (req, res) => {
 
     try {
         let uploadedFile = '';
@@ -492,10 +501,10 @@ module.exports = {
         res.status(500).json({ message: 'Reimbursement update failed', error: error.message });
     }
 
-    },
+    };
 
     // reimbrushment Delete
-    reimbrushmentDelete: async (req, res) => {
+    export const  reimbrushmentDelete = async (req, res) => {
 
         try {
             const { reimbId } = req.params;
@@ -532,11 +541,11 @@ module.exports = {
             res.status(500).json({ message: 'Internal Server Error', error: error.message });
         }
 
-    },
+    };
 
 
     //reimbrushment updateStatus  
-    updateStatus: async (req, res) => {
+    export const updateStatus = async (req, res) => {
 
         try {
             const { reimbId, status } = req.body;
@@ -570,8 +579,6 @@ module.exports = {
             console.error(error);
             res.status(500).json({ message: 'Reimbursement update failed', error: error.message });
         }
-    },
+    };
 
 
-};
-//module.exports end

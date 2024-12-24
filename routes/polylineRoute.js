@@ -1,8 +1,8 @@
-const express = require('express');
-const polylineController = require('../controllers/polylineController');
+import express from 'express'
+import {submitpolyline,getpolyline} from '../controllers/polylineController.js';
 const router = express.Router();
 
-router.post('/submit-polyline', polylineController.submitpolyline);
-router.post('/get-polyline', polylineController.getpolyline);
+router.post('/submit-polyline', submitpolyline);
+router.post('/get-polyline', getpolyline);//isnt working
 
-module.exports = router;
+export default router;

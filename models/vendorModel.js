@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Define the user schema
 const vendorSchema = new mongoose.Schema({
@@ -15,7 +15,10 @@ const vendorSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-
+    role: { 
+        type: String,
+         default: 'employee'
+     },
     vendorCompany: {
         type: String,
         default: '',
@@ -104,4 +107,4 @@ const vendorSchema = new mongoose.Schema({
 // Create the User model
 const vendor = mongoose.model('vendor', vendorSchema);
 
-module.exports = vendor;
+export default vendor;

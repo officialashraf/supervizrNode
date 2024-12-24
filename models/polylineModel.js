@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+
+import mongoose from "mongoose";
 
 // Define the user schema
 const polylineSchema = new mongoose.Schema({
@@ -33,4 +34,4 @@ const polylineSchema = new mongoose.Schema({
 // Create the polyline model
 const polyline = mongoose.model('polyline', polylineSchema);
 
-module.exports = polyline;
+export default polyline;

@@ -1,28 +1,28 @@
-const express = require('express');
+import express from 'express'
 const router = express.Router();
-const reimbursementController = require('../controllers/reimbursementController');
-const { taskDocumentUploadHandler } = require('../middlewares/multer-config');
+import {createReimbrushment, reimbrushmentDelete, reimbrushmentList,reimbrushmentEdit,updateStatus,reimbrushmentUpdate,getReimbursementSums} from  '../controllers/reimbursementController.js';
+import { taskDocumentUploadHandler } from  '../middlewares/multer-config.js';
 
 // Define your all task Controller route
 router.post('/create',taskDocumentUploadHandler.fields([
     { name: 'reimbursementDoc', maxCount: 1 }]),
-    reimbursementController.createReimbrushment);
+    createReimbrushment);
 
-// router.post('/create', reimbursementController.createReimbrushment);
+// router.post('/create', createReimbrushment);
 
-router.post('/list', reimbursementController.reimbrushmentList);
-router.get('/edit/:reimbId', reimbursementController.reimbrushmentEdit);
+router.post('/list', reimbrushmentList);
+router.get('/edit/:reimbId', reimbrushmentEdit);
 
-router.post('/updateStatus', reimbursementController.updateStatus);
+router.post('/updateStatus', updateStatus);
 
 router.post('/update',taskDocumentUploadHandler.fields([
     { name: 'reimbursementDoc', maxCount: 1 }]),
-    reimbursementController.reimbrushmentUpdate);
+    reimbrushmentUpdate);
 
-router.delete('/delete/:reimbId', reimbursementController.reimbrushmentDelete);
+router.delete('/delete/:reimbId', reimbrushmentDelete);
 
-router.post('/reimbursement-sum', reimbursementController.getReimbursementSums);
+router.post('/reimbursement-sum', getReimbursementSums);
 
 
 
-module.exports = router;
+ export default router;

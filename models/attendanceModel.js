@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Define the user schema
 const attendanceSchema = new mongoose.Schema({
@@ -53,4 +53,4 @@ attendanceSchema.index({ userId: 1 });
 // Create the User model
 const Attendance = mongoose.model('Attendance', attendanceSchema);
 
-module.exports = Attendance;
+export default Attendance;

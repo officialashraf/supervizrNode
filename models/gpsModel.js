@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Define the user schema
 const gpsSchema = new mongoose.Schema({
@@ -53,4 +53,4 @@ gpsSchema.index({ userId: 1 });
 // Create the User model
 const Gps = mongoose.model('Gps', gpsSchema);
 
-module.exports = Gps;
+export default Gps;

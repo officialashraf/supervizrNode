@@ -1,40 +1,52 @@
-const jwt = require('jsonwebtoken');
-const adminModel = require('../models/adminModel');
-const vendorModel = require('../models/vendorModel');
-const employeeModel = require('../models/employeeModel');
 
-module.exports = {
+import jwt from 'jsonwebtoken'
+import adminModel  from '../models/adminModel.js'
+import vendorModel from '../models/vendorModel.js'
+import employeeModel from '../models/employeeModel.js'
+import { broadcastLocationUpdate } from '../socket.js'
+
+
  
-  //check admin login for web 
-  adminLogin: async (req, res) => {
-    try {
-      const { username, password } = req.body;
-  
-      // Find the admin by username and password
-      const user = await adminModel.findOne({ username, password });
-      
-      if (!user) {
-        return res.json({status:false, message: 'Invalid username or password' });
-      }
-  
-    // Generate a JWT token
-      const token = jwt.sign(
-        { userId: user._id, username: user.username },
-        process.env.SECRET_KEY, // Use a secure key stored in an environment variable
-        { expiresIn: '7d' } // Token expiration time set to 7 days
-      ); 
 
-      console.log(token);
-      // Respond with the token
-      res.json({ status:true,message: 'Login successful', token });
+
+  //check admin login for web 
+  export const adminLogin = async (req, res) => {
+    try {
+        const { username, password } = req.body;
+    
+        // Find the admin by username and password
+        const user = await adminModel.findOne({ username, password });
+        console.log('Admin User:', user); // Debug user
+        if (!user) {
+            return res.json({status:false, message: 'Invalid username or password' });
+        }
+
+       
+
+        const payload = {
+            userId: user._id,
+            username: user.username,
+            userRole: user.role, // Ensure role is correctly fetched
+        };
+        
+        const token = jwt.sign(
+            payload,
+            process.env.SECRET_KEY, // Secure key from environment
+            { expiresIn: '7d' } // Token expiration time
+        );
+
+        console.log('Generated Token:', token); // Debug token
+        console.log('Payload:', payload); // Debug payload
+
+        res.json({ status:true, message: 'Login successful', token });
     } catch (error) {
-      console.error(error);
-      res.json({ status:false,message: 'Failed to log in' });
+        console.error('Login Error:', error);
+        res.json({ status:false, message: 'Failed to log in' });
     }
-  },
+};
 
   //vendor list for admin
-  vendorListing: async (req, res) => {
+  export const vendorListing = async (req, res) => {
     
     try {
       // Fetch all vendors for the given userId
@@ -49,16 +61,18 @@ module.exports = {
       }
   
       // Send the client list in the response
-      res.json({ status: true, message: 'Vendor list fetched successfully', data: vendorList });
+      res.json({ status: true, 
+        totalVendors:vendorList.length,
+        message: 'Vendor list fetched successfully', data: vendorList });
   
     } catch (error) {
       console.error('Error fetching vendor list:', error);
       res.json({ status: false, message: 'Internal Server Error', error: error.message });
     }
-  },
+  };
 
       //add vendor subscription plan
-    addVendorSubscription: async (req, res) => {
+      export const addVendorSubscription = async (req, res) => {
       
       try {
           const { startDate, endDate, vendorId } = req.body;
@@ -96,10 +110,10 @@ module.exports = {
           console.error(error);
           res.json({  status: false ,message: 'Internal Server Error' });
       }
-    },
+    };
 
     //update vendor subscription plan
-    updateVendorStatus: async (req, res) => {
+    export const updateVendorStatus = async (req, res) => {
 
     try {
       const { vendorId } = req.body;
@@ -133,11 +147,11 @@ module.exports = {
       console.error('Error updating vendor status:', error);
       res.json({status: false, message: 'Internal Server Error' });
     }
-},
+};
 
 
    //dashbboardCounts 
-   dashbboardCounts: async (req, res) => {
+   export const dashbboardCounts = async (req, res) => {
     try {
       // Fetch total vendors count
       const totalVendors = await vendorModel.countDocuments();
@@ -147,6 +161,13 @@ module.exports = {
   
       // Fetch inactive vendors count
       const inactiveVendors = await vendorModel.countDocuments({ status: 'inactive' });
+
+      const updateCount ={
+        totalVendors,
+          activeVendors,
+          inactiveVendors
+      }
+      broadcastLocationUpdate(updateCount)
   
       // Return the counts in the response
       res.json({
@@ -163,11 +184,11 @@ module.exports = {
       console.error('Error fetching dashboard counts:', error);
       res.json({ status: false, message: 'Internal Server Error', error: error.message });
     }
-},
+};
 
 
   //recent vendor listing for admin
-  RecentVendorListing: async (req, res) => {
+  export const  RecentVendorListing = async (req, res) => {
     
     try {
       // Fetch the most recent 5 vendors based on the vendorCreated date
@@ -190,10 +211,10 @@ module.exports = {
       res.json({ status: false, message: 'Internal Server Error', error: error.message });
   }
   
-  },
+  };
 
 
-  getEmpList: async (req, res) => {
+  export const getEmpList = async (req, res) => {
     try {
         const { vendorId } = req.params;
         console.log('vendorId',vendorId);
@@ -219,10 +240,10 @@ module.exports = {
     } catch (error) {
       res.json({ status: false, message: 'Internal Server Error', error: error.message });
     }
-},
+};
 
   //delete employee 
-  deleteEmployee: async (req, res) => {
+  export const deleteEmployee = async (req, res) => {
     try {
         const { employeeId } = req.params;
         
@@ -248,12 +269,12 @@ module.exports = {
         console.error('Error deleting employee:', error);
         res.json({ status: false, message: 'Internal Server Error' ,error});
     }
-},
+}
 
 
 
-};
-//module.exports end
+
+
 
 
 

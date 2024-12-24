@@ -1,11 +1,11 @@
-const reimbrushmentModel = require('../models/reimbrushmentModel');
-const employeeModel = require('../models/employeeModel');
-const vendorModel = require('../models/vendorModel');
+import reimbrushmentModel from '../models/reimbrushmentModel.js';
+import employeeModel from '../models/employeeModel.js';
+import vendorModel from '../models/vendorModel.js';
 
-const multer = require('multer');
-const path = require('path');
-const axios = require('axios');
-const moment = require('moment-timezone');
+import multer from 'multer';
+import path from 'path';
+import axios from 'axios';
+import moment from 'moment-timezone';
 
 // Storage configuration for multer
 const storage = multer.diskStorage({
@@ -21,9 +21,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage }).single("reimbrushmentDocument");
 
-module.exports = {
 
-    createReimbrushment: async (req, res) => {
+
+    export const createReimbrushment = async (req, res) => {
         try {
 
             upload(req, res, async function (err) {
@@ -110,12 +110,12 @@ module.exports = {
         }
 
 
-    },
+    };
 
 
 
     //For reimbrushment List api
-    reimbrushmentList: async (req, res) => {
+    export const reimbrushmentList = async (req, res) => {
 
         try {
 
@@ -142,10 +142,10 @@ module.exports = {
             res.status(500).json({ message: 'Internal Server Error', error });
         }
 
-    },
+    };
 
     //reimbrushment Edit
-    reimbrushmentEdit: async (req, res) => {
+    export const  reimbrushmentEdit = async (req, res) => {
 
         try {
 
@@ -165,11 +165,11 @@ module.exports = {
             console.error('Error for geting Reimbrushment:', error);
             res.status(500).json({ message: 'Internal Server Error', error });
         }
-    },
+    };
 
 
     //reimbrushment Update
-    reimbrushmentUpdate: async (req, res) => {
+    export const reimbrushmentUpdate = async (req, res) => {
 
         try {
 
@@ -234,10 +234,10 @@ module.exports = {
             res.status(500).json({ message: 'Internal Server Error', error });
         }
 
-    },
+    };
 
     // reimbrushment Delete
-    reimbrushmentDelete: async (req, res) => {
+    export const reimbrushmentDelete = async (req, res) => {
 
         try {
 
@@ -260,7 +260,5 @@ module.exports = {
             res.status(500).json({ message: 'Internal Server Error', error });
         }
 
-    },
+    };
 
-};
-//module.exports end

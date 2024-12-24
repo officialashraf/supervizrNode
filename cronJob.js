@@ -1,22 +1,21 @@
-const cron = require('node-cron');
-const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
-
-const dotenv = require('dotenv');
+import cron from 'node-cron';
+import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
 // Load environment variables from .env file
-dotenv.config();
+dotenv.config({path:'./config/config.env'});
 
-// const baseUrl = process.env.BASE_URL;
+ const baseUrl = process.env.BASE_URL;
 
 // const baseUrl = 'http://localhost:4001/' 
 // const baseUrl = http://matchitsports.com:4001/  #stage
-const baseUrl = 'http://203.161.63.242:4001';
+//const baseUrl = 'http://203.161.63.242:4001';..
 
 const logFilePath = path.join(__dirname, 'cronjob.log');
 
 // Function to log messages to the log file
-const logMessage = (message) => {
+ export const logMessage = (message) => {
     const timestamp = new Date().toISOString();
 
     const currentDateIST = moment.tz(new Date(), 'Asia/Kolkata');
@@ -32,7 +31,7 @@ const logMessage = (message) => {
 
 const endpointPath = '/api/attendance/autolog';
 // Define the task to be executed
-const task = async () => {
+export const task = async () => {
     try {
         // Make the API GET request
         const response = await axios.get(baseUrl + endpointPath);

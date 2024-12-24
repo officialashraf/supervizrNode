@@ -1,21 +1,22 @@
-const express = require('express');
+import express from 'express'
 const router = express.Router();
-const userController = require('../controllers/userController');
+import { authorize} from  '../middlewares/auth.js'
+import { forgotPassword, resetPassword, generateOTP, signup,verifyOTP,loginSignupMobileOtp,getAllUser, getUserProfile,updateUserProfile,currentLocation, logout,userDelete } from  '../controllers/userController.js';
 
-router.post('/forgot-password', userController.forgotPassword);
-router.post('/reset-password/:token', userController.resetPassword);
-router.post('/login-api', userController.loginSignupMobileOtp);///isnt working
-router.post('/verify', userController.verifyOTP);
-router.post('/generate', userController.generateOTP);
-router.post('/create-user', userController.signup);
-router.get('/userList', userController.getAllUser);
-router.get('/profile/:userId', userController.getUserProfile);
-router.put('/update-profile/:userId', userController.updateUserProfile);
-// router.get('/trackUser/+-:userId', userController.getUserTrack);
-router.post('/current-location', userController.currentLocation);
-router.delete('/delete/:userId', userController.userDelete);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:token', resetPassword);
+router.post('/login-api', loginSignupMobileOtp);
+router.post('/verify', verifyOTP);
+router.post('/generate', generateOTP);
+router.post('/create-user', signup);
+router.get('/userList', getAllUser);
+router.get('/profile/:userId', getUserProfile);
+router.put('/update-profile/:userId', updateUserProfile);
+// router.get('/trackUser/+-:userId', getUserTrack);
+router.post('/current-location', currentLocation);
+router.delete('/delete/:userId', userDelete);
 
-router.post('/logout-api', userController.logout);///isnt working
+router.post('/logout-api' ,authorize(['vendor',  'employee']), logout);
 
 
-module.exports = router;
+export default router;

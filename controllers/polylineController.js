@@ -1,14 +1,14 @@
 
-const CONSTANTS= require('../utils/constants');
-const userService = require('../services/userService');
-const moment = require('moment-timezone');
-const polyline = require('../models/polylineModel');
+//import CONSTANTS from '../utils/constants.js';
+//import userService  from '../services/userService.js';
+import moment  from 'moment-timezone';
+import polyline  from '../models/polylineModel.js';
 
 
-module.exports = {
+
 
     //Login for vendor using mobile number
-    submitpolyline: async (req, res) => {
+   export const submitpolyline = async (req, res) => {
 
         try {
             const { vendorId, type, lat, long } = req.body;
@@ -26,11 +26,11 @@ module.exports = {
         } catch (error) {
             res.status(500).json({ message: 'Error inserting data', error: error.message });
         }
-    },
+    };
 
 
     // getpolyline
-    getpolyline: async (req, res) => {
+    export const  getpolyline = async (req, res) => {
         
           try {
         let { filterDate, vendorId } = req.body;
@@ -63,10 +63,8 @@ module.exports = {
         res.status(500).json({ message: 'Error retrieving data', error: error.message });
     }
         
-    },
+    };
 
-};
-//module.exports end
 
 
 

@@ -1,12 +1,12 @@
-const clientModel = require('../models/clientModel');
-const employeeModel = require('../models/employeeModel');
-const vendorModel = require('../models/vendorModel');
+import clientModel from '../models/clientModel.js';
+import employeeModel from '../models/employeeModel.js';
+import vendorModel from '../models/vendorModel.js';
 
-const userService = require('../services/userService');
+import {isValidEmail,isValidMobile} from '../services/userService.js';
 
-const multer = require('multer');
-const path = require('path');
-const moment = require('moment-timezone');
+import multer from 'multer';
+import path from 'path';
+import moment from 'moment-timezone';
 
 // Storage configuration for multer
 const storage = multer.diskStorage({
@@ -23,10 +23,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage }).single("clientDocument");
 
 
-module.exports = {
 
     //For create api using vendor
-    createClient: async (req, res) => {
+     export const createClient = async (req, res) => {
 
         try {
 
@@ -91,10 +90,10 @@ module.exports = {
 
                 }
 
-                if (clientEmail && !await userService.isValidEmail(clientEmail)) {
+                if (clientEmail && !await isValidEmail(clientEmail)) {
                     return res.status(400).json({ message: 'Invalid email address' });
                 }
-                if (!await userService.isValidMobile(clientMobile)) {
+                if (!await isValidMobile(clientMobile)) {
                     return res.status(400).json({ message: 'Invalid mobile number' });
                 }
 
@@ -147,12 +146,12 @@ module.exports = {
         }
 
 
-    },
+    };
 
 
 
     //For clientList api for admin
-    // clientList: async (req, res) => {
+    // clientList = async (req, res) => {
 
     //     try {
 
@@ -185,7 +184,7 @@ module.exports = {
 
     // },
 
-    clientList: async (req, res) => {
+    export const  clientList = async (req, res) => {
         try {
             const { vendorId } = req.params;
     
@@ -209,11 +208,11 @@ module.exports = {
             console.error('Error fetching clients:', error);
             res.status(500).json({ message: 'Internal Server Error', error });
         }
-    },
+    };
 
 
     //For clientDetails
-    clientDetails: async (req, res) => {
+    export const  clientDetails = async (req, res) => {
 
         try {
 
@@ -233,11 +232,11 @@ module.exports = {
             res.status(500).json({ message: 'Internal Server Error', error });
         }
 
-    },
+    };
 
 
     //For updateClient update
-    updateClients: async (req, res) => {
+    export const updateClients = async (req, res) => {
 
         try {
 
@@ -276,10 +275,10 @@ module.exports = {
 
                 const Client = await clientModel.findById(clientId);
 
-                if (clientEmail && !await userService.isValidEmail(clientEmail)) {
+                if (clientEmail && !await isValidEmail(clientEmail)) {
                     return res.status(400).json({ message: 'Invalid email address' });
                 }
-                if (!await userService.isValidMobile(clientMobile)) {
+                if (!await isValidMobile(clientMobile)) {
                     return res.status(400).json({ message: 'Invalid mobile number' });
                 }
 
@@ -359,11 +358,11 @@ module.exports = {
             res.status(500).json({ message: 'Internal Server Error' });
         }
 
-    },
+    };
 
 
     //Client delete
-    clientDelete: async (req, res) => {
+    export const  clientDelete = async (req, res) => {
 
         try {
 
@@ -386,8 +385,5 @@ module.exports = {
             res.status(500).json({ message: 'Internal Server Error', error });
         }
 
-    },
+    };
 
-
-};
-//module.exports end

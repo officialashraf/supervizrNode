@@ -1,22 +1,26 @@
-const User = require('../models/user');
-const attendanceModel = require('../models/attendanceModel');
-const taskModel = require('../models/taskModel');
-const logoutModel = require('../models/logoutModel');
-const loginModel = require('../models/loginModel');
-const trackModel = require('../models/trackModel');
 
-const employeeModel = require('../models/employeeModel');
-const vendorModel = require('../models/vendorModel');
+// const  blacklist  = require('validator');
+// const loginModel = require('../models/loginModel');
+// const attendanceModel = require('../models/attendanceModel');
+// const taskModel = require('../models/taskModel');
 
-const userService = require('../services/userService');
-const moment = require('moment-timezone');
+import  User from '../models/user.js';
+import  logoutModel from '../models/logoutModel.js';
+import  trackModel from '../models/trackModel.js';
 
-const jwt = require('jsonwebtoken');
-const { sendOTP } = require('../services/msgService');
+import  employeeModel from '../models/employeeModel.js';
+import  vendorModel from '../models/vendorModel.js';
 
-module.exports = {
+//import {generateOTP , isValidEmail,isValidMobile,isValidPassword, parseCoordinates,calculateDistanceAndDuration}  from '../services/userService.js';
+import { sendOTP, sendEmployeeMsg }  from '../services/msgService.js';
+
+import moment from 'moment-timezone';
+import jwt from 'jsonwebtoken'
+
+
+
   //For create employee api
-  signup: async (req, res) => {
+ export const signup = async (req, res) => {
     try {
       const { fullname, mobile, userType, machineNumber, workLocation } = req.body;
 
@@ -49,10 +53,10 @@ module.exports = {
       console.error(error);
       res.status(500).json({ message: 'Internal Server Error' });
     }
-  },
+  };
 
   //login Signup Mobile Otp api
-  // loginSignupMobileOtp: async (req, res) => {
+  // loginSignupMobileOtp = async (req, res) => {
 
   //   try {
   //     const { mobileNumber } = req.body;
@@ -99,7 +103,7 @@ module.exports = {
 
   // },
 
-  loginSignupMobileOtp: async (req, res) => {
+  export const loginSignupMobileOtp = async (req, res) => {
 
     try {
       const { mobileNumber } = req.body;
@@ -161,11 +165,11 @@ module.exports = {
     }
 
 
-  },
+  };
   
   //generate otp
 
-  generateOTP: async (req, res) => {
+  export const generateOTP = async (req, res) => {
     try {
       const { mobile } = req.body;
 
@@ -205,10 +209,10 @@ module.exports = {
       console.error(error);
       res.status(500).json({ message: 'Failed to generate OTP' });
     }
-  },
+  };
 
   //verify otp
-  verifyOTP: async (req, res) => {
+  export const  verifyOTP = async (req, res) => {
     try {
       const { otp, mobile } = req.body;
 
@@ -242,10 +246,10 @@ module.exports = {
       console.error(error);
       res.status(500).json({ message: 'Failed to verify OTP' });
     }
-  },
+  };
 
   //users list api
-  getAllUser: async (req, res) => {
+  export const getAllUser = async (req, res) => {
     try {
       const users = await User.find({}, '-password -otp'); // Exclude password and OTP from the response
 
@@ -254,11 +258,11 @@ module.exports = {
       console.error('Error fetching all users:', error);
       res.status(500).json({ message: 'Internal Server Error' });
     }
-  },
+  };
 
   //forgot api for sending link 
 
-  forgotPassword: async (req, res) => {
+  export const forgotPassword = async (req, res) => {
     try {
       const { mobile } = req.body;
 
@@ -280,11 +284,11 @@ module.exports = {
       console.error(error);
       res.status(500).json({ message: 'Internal Server Error' });
     }
-  },
+  };
 
   //reset api for change Password 
 
-  resetPassword: async (req, res) => {
+  export const resetPassword = async (req, res) => {
     try {
       const { token } = req.params;
       const { newPassword } = req.body;
@@ -309,10 +313,10 @@ module.exports = {
       console.error(error);
       res.status(400).json({ message: 'Invalid or expired token' });
     }
-  },
+  };
 
   //get profile details
-  getUserProfile: async (req, res) => {
+  export const getUserProfile = async (req, res) => {
     try {
       const { userId } = req.params;
 
@@ -329,10 +333,10 @@ module.exports = {
       console.error(error);
       res.status(500).json({ message: 'Internal Server Error' });
     }
-  },
+  };
 
   //update profile data
-  updateUserProfile: async (req, res) => {
+  export const updateUserProfile = async (req, res) => {
     try {
       const { userId } = req.params;
       // const { fullname, username, email, newPassword } = req.body;
@@ -389,11 +393,11 @@ module.exports = {
       console.error(error);
       res.status(500).json({ message: 'Internal Server Error' });
     }
-  },
+  };
 
 
   // //getUserTrack
-  // getUserTrack: async (req, res) => {
+  // getUserTrack = async (req, res) => {
   //   try {
 
   //     const userId = req.params.userId;
@@ -451,7 +455,7 @@ module.exports = {
 
 
   //CurrentLocation
-  currentLocation: async (req, res) => {
+  export const  currentLocation = async (req, res) => {
     try {
       const { userId, lat, long } = req.body;
 
@@ -475,11 +479,11 @@ module.exports = {
       console.error('Error fetching user current location', error);
       res.status(500).json({ message: 'Internal Server Error' });
     }
-  },
+  };
 
 
   //delete Vendor
-  userDelete: async (req, res) => {
+  export const userDelete = async (req, res) => {
 
     try {
 
@@ -502,14 +506,14 @@ module.exports = {
       res.status(500).json({ message: 'Internal Server Error', error });
     }
 
-  },
+  };
 
 
    //logout for vendoor/ emp
-   logout: async (req, res) => {
+   export const logout = async (req, res) => {
     try {
         const { userId, lat, long, type } = req.body;
-
+      
         // Check if any field is empty
         if (!userId || !lat || !long || !type ) {
             return res.status(400).json({ error: 'One or more fields are empty' });
@@ -562,6 +566,8 @@ module.exports = {
             createdAt: currentDate,
         });
         await newTrack.save();
+       
+       
         // Respond with success message
         res.status(200).json({ message: `${status} Successfully` });
 
@@ -569,13 +575,12 @@ module.exports = {
         console.error('Error:', error.message);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-},
-
-
-
-
 };
-//module.exports end
+
+
+
+
+
 
 
 

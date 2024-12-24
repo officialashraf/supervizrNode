@@ -1,16 +1,15 @@
-const express = require('express');
+import express from 'express'
 const router = express.Router();
-const clientController = require('../controllers/clientController');
-
-const multer = require('multer');
+import {createClient, clientDetails, clientList, clientDelete,updateClients} from '../controllers/clientController.js';
+import {authorize} from '../middlewares/auth.js'
+import multer from 'multer';
 const upload = multer();
 
 
-// Define your all task Controller route
-router.post('/create', clientController.createClient);//check it 
-router.get('/list/:vendorId', clientController.clientList);//vendor id issue
-router.get('/details/:clientId', clientController.clientDetails);
-router.delete('/delete/:clientId', clientController.clientDelete);
-router.post('/update-client', clientController.updateClients);
+router.post('/create',authorize(['vendor','admin']), createClient);// Define your all task Controller route
+router.get('/list/:vendorId',authorize(['vendor','admin']) , clientList);//vendor id issue
+router.get('/details/:clientId', clientDetails);
+router.delete('/delete/:clientId',authorize(['vendor','admin']), clientDelete);
+router.post('/update-client',authorize(['vendor','admin']), updateClients);
 
-module.exports = router;
+export default router;

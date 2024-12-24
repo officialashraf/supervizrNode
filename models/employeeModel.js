@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Define the user schema
 const empSchema = new mongoose.Schema({
@@ -93,6 +93,10 @@ const empSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
+    role: { 
+        type: String,
+         default: 'employee'
+     },
 
     status: {
         type: String,
@@ -103,4 +107,4 @@ const empSchema = new mongoose.Schema({
 
 // Create the User model
 const Employee = mongoose.model('Employee', empSchema);
-module.exports = Employee;
+export default Employee;

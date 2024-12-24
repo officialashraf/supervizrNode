@@ -1,24 +1,28 @@
-const express = require('express');
-const adminController = require('../controllers/adminController');
-const verifyToken = require('../middlewares/verifyToken');
+ import express from "express";
+
+import {authorize} from '../middlewares/auth.js';
+import {adminLogin, vendorListing, addVendorSubscription,updateVendorStatus,dashbboardCounts,RecentVendorListing,getEmpList,deleteEmployee} from '../controllers/adminController.js'
 const router = express.Router();
 
-router.post('/admin-login', adminController.adminLogin);
-
-router.post('/vendor-listing', verifyToken, adminController.vendorListing);
-
-router.post('/add-subscription', verifyToken, adminController.addVendorSubscription);
-
-router.post('/update-vendorstatus', verifyToken, adminController.updateVendorStatus);
-
-router.get('/dashboard-counts',verifyToken, adminController.dashbboardCounts);
-
-router.get('/recent-vendors',verifyToken, adminController.RecentVendorListing);
 
 
-router.post('/employee-listing/:vendorId', verifyToken, adminController.getEmpList);
 
-router.delete('/delete-employee/:employeeId', verifyToken, adminController.deleteEmployee);
+router.post('/admin-login', adminLogin);
+
+router.post('/vendor-listing',authorize(['admin']), vendorListing);
+
+router.post('/add-subscription', authorize(['admin']), addVendorSubscription);
+
+router.post('/update-vendorstatus', authorize(['admin']), updateVendorStatus);
+
+router.get('/dashboard-counts',authorize(['admin']), dashbboardCounts);
+
+router.get('/recent-vendors',authorize(['admin']), RecentVendorListing);
 
 
-module.exports = router;
+router.post('/employee-listing/:vendorId', authorize(['admin']), getEmpList);
+
+router.delete('/delete-employee/:employeeId', authorize(['admin']), deleteEmployee);
+
+
+export default  router;

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Define the reimbrushSchema
 const reimbrushSchema = new mongoose.Schema({
@@ -73,5 +73,5 @@ const reimbrushSchema = new mongoose.Schema({
 // Create the reimbrushment model
 const reimbrushment = mongoose.model('reimbrushment', reimbrushSchema);
 
-module.exports = reimbrushment;
+export default reimbrushment;
 

@@ -1,31 +1,32 @@
-const express = require('express');
+import express from 'express'
 const router = express.Router();
-const taskController = require('../controllers/taskController');
+import  { createTask, taskDelete,taskEdit, taskList,taskUpdates,taskDone,taskListByEmp,CheckDistanceAndDuration}  from '../controllers/taskController.js';
 
-const { taskDocumentUploadHandler } = require('../middlewares/multer-config');
+import  { taskDocumentUploadHandler }  from '../middlewares/multer-config.js';
 
 
-// Define your all task Controller route
-router.post('/create', taskDocumentUploadHandler.fields([
+
+router.post('/create', taskDocumentUploadHandler
+    .fields([ // Define your all task Controller route
     { name: 'taskDocument', maxCount: 1 },
     { name: 'taskImage', maxCount: 1 }]),
 
-    taskController.createTask);
+    createTask);
    
 
-router.get('/list/:vendorId', taskController.taskList);//not working
-router.get('/edit/:taskID', taskController.taskEdit);
+router.get('/list/:vendorId', taskList);
+router.get('/edit/:taskID', taskEdit);
 
 router.post('/task-update',taskDocumentUploadHandler.fields([
     { name: 'taskDocument', maxCount: 1 },
     { name: 'taskImage', maxCount: 1 },
     { name: 'noteImage', maxCount: 1 }]), 
-    taskController.taskUpdates);
+    taskUpdates);
     
 
-    router.delete('/delete/:taskId', taskController.taskDelete);
-router.post('/done', taskController.taskDone);
- router.post('/getDistance', taskController.CheckDistanceAndDuration);
-router.get('/get-task-empids/:empId', taskController.taskListByEmp);//not working
+router.delete('/delete/:taskId', taskDelete);
+router.post('/done', taskDone);
+router.post('/getDistance', CheckDistanceAndDuration);
+router.get('/get-task-empids/:empId', taskListByEmp);
 
-module.exports = router;
+export default router;

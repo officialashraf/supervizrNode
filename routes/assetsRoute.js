@@ -1,23 +1,24 @@
-const express = require('express');
+import express from 'express'
 const router = express.Router();
-const assetsController = require('../controllers/assetsController');
-const { taskDocumentUploadHandler } = require('../middlewares/multer-config');
+import {createAsset,assetsDelete, assetsList,assetsEdit, assetsUpdate} from '../controllers/assetsController.js'
+import { taskDocumentUploadHandler }  from '../middlewares/multer-config.js';
+import {authorize}  from '../middlewares/auth.js'
 
 // Define your all task Controller route
 router.post('/create',taskDocumentUploadHandler.fields([
-    { name: 'assetDocument', maxCount: 1 }]),
-    assetsController.createAsset);
+    { name: 'assetDocument', maxCount: 1 }]), authorize(['vendor', 'admin']),
+    createAsset);
 
-// router.post('/create', assetsController.createReimbrushment);
+// router.post('/create', createReimbrushment);
 
-router.post('/list', assetsController.assetsList);
-router.get('/edit/:assetId', assetsController.assetsEdit);
+router.post('/list',authorize(['vendor', 'admin']), assetsList);
+router.get('/edit/:assetId',authorize(['vendor', 'admin', 'employee']), assetsEdit);
 
-router.post('/update',taskDocumentUploadHandler.fields([ { name: 'assetDocument', maxCount: 1 }]), assetsController.assetsUpdate);
+router.post('/update',taskDocumentUploadHandler.fields([ { name: 'assetDocument', maxCount: 1 }]),authorize(['vendor', 'admin']), assetsUpdate);
 
-router.delete('/delete/:assetId', assetsController.assetsDelete);
-
-
+router.delete('/delete/:assetId',authorize(['vendor', 'admin']), assetsDelete);
 
 
-module.exports = router;
+
+
+export default router;

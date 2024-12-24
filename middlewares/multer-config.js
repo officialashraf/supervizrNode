@@ -1,5 +1,5 @@
-const multer = require('multer');
-const path = require('path');
+import path from "path";
+import multer from "multer";
 
 // Multer configuration for taskDocument
 const storageTaskDocument = multer.diskStorage({
@@ -49,6 +49,6 @@ const storageTaskDocument = multer.diskStorage({
 // Multer instances for taskDocument and taskImage
 const taskDocumentUploadHandler = multer({ storage: storageTaskDocument });
 
-module.exports = {
+export {
   taskDocumentUploadHandler,
 };

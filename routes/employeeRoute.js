@@ -1,19 +1,20 @@
-const express = require('express');
+import express from 'express'
 const router = express.Router();
-const employeeController = require('../controllers/employeeController');
+import { authorize } from '../middlewares/auth.js';
+import {createEmp, getEmpList, getEmployee,filterEmpType,updateEmployee,employeeLogin,verifyOTP,currentLocation,clientList,taskList,trackEmpRecord, empDelete, getEmpTrack} from '../controllers/employeeController.js'
 
-router.post('/create-employee', employeeController.createEmp);
-router.get('/empList/:vendorId', employeeController.getEmpList);
-router.get('/getEmpDetail/:userId', employeeController.getEmployee);
-router.post('/get-filter-emp', employeeController.filterEmpType);
-router.put('/update-employee/:userId', employeeController.updateEmployee);
-router.post('/employee-login', employeeController.employeeLogin);
-router.post('/verify', employeeController.verifyOTP);
-router.post('/trackEmployee', employeeController.getEmpTrack);//not working
-router.post('/employeeNewTracking', employeeController.trackEmpRecord);//not working
-router.delete('/delete/:userId', employeeController.empDelete);
-router.post('/current-location', employeeController.currentLocation);
-router.get('/clientlist/:userId', employeeController.clientList);
-router.get('/taskList/:userId', employeeController.taskList);
+router.post('/create-employee',createEmp);
+router.get('/empList/:vendorId',authorize(['vendor','admin']),getEmpList);
+router.get('/getEmpDetail/:userId',authorize(['vendor','employee', 'admin']),getEmployee );
+router.post('/get-filter-emp',authorize(['vendor','admin']),filterEmpType);
+router.put('/update-employee/:userId',authorize(['vendor','admin']),updateEmployee);
+router.post('/employee-login',employeeLogin);
+router.post('/verify',verifyOTP);
+router.post('/trackEmployee',authorize(['vendor','admin']),getEmpTrack);//C//ws
+router.post('/employeeNewTracking',authorize(['vendor','admin']),trackEmpRecord);//C//ws
+router.delete('/delete/:userId',authorize(['vendor','admin']),empDelete);
+router.post('/current-location',currentLocation);//ws
+router.get('/clientlist/:userId',clientList);//C
+router.get('/taskList/:userId',authorize(['vendor','admin', 'employee']),taskList );
 
-module.exports = router;
+export default router;

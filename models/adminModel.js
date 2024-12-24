@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 // Define the admin schema
 const adminSchema = new mongoose.Schema({
@@ -9,11 +9,15 @@ const adminSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
+  }, 
+  role:{
+    type: String,
+    default:'admin'
   }
 
 }, { versionKey: false });
 
 // Create the Admin model
-const Admin = mongoose.model('Admin', adminSchema);
+ const adminModel = mongoose.model('Admin', adminSchema);
+ export default adminModel
 
-module.exports = Admin;

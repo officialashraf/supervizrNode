@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Define the licenceSchema
 const licenseSchema = new mongoose.Schema({
@@ -82,4 +82,4 @@ const licenseSchema = new mongoose.Schema({
 // Create the license model
 const license = mongoose.model('license', licenseSchema);
 
-module.exports = license;
+ export default license;

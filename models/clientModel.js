@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Define the user schema
 const clientSchema = new mongoose.Schema({
@@ -99,4 +99,4 @@ const clientSchema = new mongoose.Schema({
 // Create the User model
 const client = mongoose.model('client', clientSchema);
 
-module.exports = client;
+ export default client;
